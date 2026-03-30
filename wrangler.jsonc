@@ -12,7 +12,7 @@
   ],
   "migrations": [
     {
-      "tag": "v1",
+      "tag": "v2",
       "deleted_classes": [
         "MyMCP"
       ]
