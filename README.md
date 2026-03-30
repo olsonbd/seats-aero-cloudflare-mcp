@@ -1,51 +1,89 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Seats.aero Cloudflare MCP Server
 
-This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers.
+A TypeScript-based, stateless Remote MCP server for interacting with the seats.aero API via natural language. This server runs on the edge via Cloudflare Workers, providing lightning-fast, highly scalable access to flight availability, routes, and bulk searches.
 
-## Get started:
+❗ **Prerequisites:** You will need a seats.aero Pro API key to use this tool.
 
-[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-authless)
+---
 
-This will deploy your MCP server to a URL like: `remote-mcp-server-authless.<your-account>.workers.dev/sse`
+## 🚀 Get Started: One-Click Deploy
 
-Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
+You can deploy this server directly to your Cloudflare account in one click:
 
-```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
-```
+[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/olsonbd/seats-aero-cloudflare-mcp)
 
-## Customizing your MCP Server
+Once deployed, your MCP server will be live at a URL like: `https://seats-aero-cloudflare-mcp.<your-account>.workers.dev/mcp`
 
-To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`.
+### 🔐 Crucial Post-Deploy Step: Add Your Secrets
+Because this server acts as a secure proxy to the seats.aero API, you must configure your secrets in the Cloudflare Dashboard before the server will function.
 
-## Connect to Cloudflare AI Playground
+1. Go to your Cloudflare Dashboard > **Workers & Pages** > `seats-aero-cloudflare-mcp`.
+2. Navigate to **Settings > Variables and Secrets**.
+3. Add the following encrypted variables:
+   * **`SEATS_API_KEY`**: Your seats.aero Pro API key.
+   * **`MCP_CLIENT_SECRET`**: A secure password/token you invent to prevent unauthorized access to your edge node.
+4. Redeploy your worker to inject the new secrets.
 
-You can connect to your MCP server from the Cloudflare AI Playground, which is a remote MCP client:
+---
 
-1. Go to https://playground.ai.cloudflare.com/
-2. Enter your deployed MCP server URL (`remote-mcp-server-authless.<your-account>.workers.dev/sse`)
-3. You can now use your MCP tools directly from the playground!
+## 🛠️ Tools Available
 
-## Connect Claude Desktop to your MCP server
+The server uses strict JSON Schema enums to prevent LLM hallucinations for mileage programs and cabin classes. 
 
-You can also connect to your remote MCP server from local MCP clients, by using the [mcp-remote proxy](https://www.npmjs.com/package/mcp-remote).
+* **`get_flights`**: Get a list of flights. Maps to the cached search endpoint.
+* **`get_bulk_avail`**: Retrieve a large amount of availability objects from one specific mileage program. Maps to the bulk availability endpoint.
+* **`get_routes`**: Retrieve a list of route objects from one specific mileage program. Maps to the routes endpoint.
 
-To connect to your MCP server from Claude Desktop, follow [Anthropic's Quickstart](https://modelcontextprotocol.io/quickstart/user) and within Claude Desktop go to Settings > Developer > Edit Config.
+---
 
-Update with this configuration:
+## 💻 Manual Deployment (CLI)
+
+If you prefer to deploy via the command line instead of the one-click button:
+
+1. **Clone the repository and install dependencies:**
+   ```bash
+   git clone [https://github.com/olsonbd/seats-aero-cloudflare-mcp.git](https://github.com/olsonbd/seats-aero-cloudflare-mcp.git)
+   cd seats-aero-cloudflare-mcp
+   npm install
+
+2. **Securely store your sectrets using Wrangler:
+   npx wrangler secret put SEATS_API_KEY
+   npx wrangler secret put MCP_CLIENT_SECRET
+
+3. **Deploy to Cloudflare:
+   npx wrangler deploy
+
+## 🔌 Connecting to MetaMCP
+
+This server is designed to work seamlessly with MetaMCP as a remote `STREAMABLE_HTTP` server. 
+
+Navigate to your MetaMCP Dashboard > **MCP Servers** and add a new server using this configuration:
+
+* **Name:** `seats.aero`
+* **Type:** `STREAMABLE_HTTP`
+* **URL:** `https://seats-aero-cloudflare-mcp.<your-account>.workers.dev/mcp` *(Replace with your actual Workers URL)*
+* **Bearer Token:** *(The exact string you saved as your `MCP_CLIENT_SECRET`)*
+
+---
+
+## 🤖 Connecting to Claude Desktop
+
+You can also connect to your remote MCP server from local MCP clients using the [mcp-remote](https://www.npmjs.com/package/mcp-remote) proxy.
+
+Open your Claude Desktop configuration file and add the following:
 
 ```json
 {
-	"mcpServers": {
-		"calculator": {
-			"command": "npx",
-			"args": [
-				"mcp-remote",
-				"http://localhost:8787/sse" // or remote-mcp-server-authless.your-account.workers.dev/sse
-			]
-		}
-	}
+  "mcpServers": {
+    "seats-aero": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://seats-aero-cloudflare-mcp.<your-account>.workers.dev/mcp"
+      ],
+      "env": {
+        "MCP_REMOTE_BEARER_TOKEN": "your_mcp_client_secret_here"
+      }
+    }
+  }
 }
-```
-
-Restart Claude and you should see the tools become available.
