@@ -106,10 +106,47 @@ export default new OAuthProvider({
   tokenEndpoint: "/token",
   clientRegistrationEndpoint: "/register",
   
-  // The provider intercepts the request, verifies the OAuth token, 
-  // and passes it to MCP tools if it's valid.
-  apiHandler: async (request: Request, env: Env, ctx: ExecutionContext) => {
-    const handler = getMcpApiHandler(env);
-    return handler(request, env, ctx);
+  // Must be an object with a fetch method
+  apiHandler: {
+    fetch: async (request: Request, env: Env, ctx: ExecutionContext) => {
+      const handler = getMcpApiHandler(env);
+      return handler(request, env, ctx);
+    }
+  },
+
+defaultHandler: {
+    fetch: async (request: Request, env: any, ctx: ExecutionContext) => {
+      const url = new URL(request.url);
+
+      if (url.pathname === "/authorize") {
+        // 1. Check for the definitive proof that Cloudflare Access allowed this request
+        const accessJwt = request.headers.get("Cf-Access-Jwt-Assertion");
+        
+        if (!accessJwt) {
+          return new Response("Unauthorized: Cloudflare Access evaluation failed or missing.", { status: 401 });
+        }
+
+        // 2. Extract an identity (Email for humans, Client ID for Service Tokens)
+        const userEmail = request.headers.get("Cf-Access-Authenticated-User-Email");
+        const serviceTokenId = request.headers.get("CF-Access-Client-Id");
+        
+        // Fallback logically based on what policy triggered the success
+        const identity = userEmail || serviceTokenId || "automated-policy-user";
+
+        // 3. Parse the OAuth request
+        const oauthReqInfo = await env.OAUTH_PROVIDER.parseAuthRequest(request);
+
+        // 4. Generate the token tied to whatever identity passed the policy
+        const { redirectTo } = await env.OAUTH_PROVIDER.completeAuthorization({
+          request: oauthReqInfo,
+          userId: identity, 
+        });
+
+        // 5. Bounce back to the client!
+        return Response.redirect(redirectTo);
+      }
+
+      return new Response("Not Found", { status: 404 });
+    }
   }
 });
