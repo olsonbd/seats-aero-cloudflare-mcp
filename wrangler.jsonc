@@ -3,7 +3,6 @@
  * https://developers.cloudflare.com/workers/wrangler/configuration/
  */
 {
-{
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "seats-aero-cloudflare-mcp",
   "main": "src/index.ts",
