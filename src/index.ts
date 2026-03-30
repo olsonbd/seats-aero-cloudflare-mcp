@@ -1,11 +1,11 @@
-import OAuthProvider from "@cloudflare/workers-oauth-provider";
+import { OAuthProvider } from "@cloudflare/workers-oauth-provider";
 import { createMcpHandler } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 export interface Env {
   SEATS_API_KEY: string;
-  // Cloudflare Access and the OAuth handle security.
+  OAUTH_KV: KVNamespace; // <-- We added this line so the Worker knows about the database!
 }
 
 const SUPPORTED_SOURCES = [
@@ -13,6 +13,8 @@ const SUPPORTED_SOURCES = [
   "emirates", "etihad", "flyingblue", "lifemiles", "qantas", 
   "smiles", "velocity", "virginatlantic"
 ] as const;
+
+// ... The rest of your code remains exactly the same! ...
 
 const SUPPORTED_CABINS = ["economy", "premium", "business", "first"] as const;
 
