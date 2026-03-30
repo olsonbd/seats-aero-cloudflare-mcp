@@ -1,4 +1,4 @@
-import OAuthProvider from "@cloudflare/oauth-provider";
+import OAuthProvider from "@cloudflare/workers-oauth-provider";
 import { createMcpHandler } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
