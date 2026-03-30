@@ -41,11 +41,11 @@ The server uses strict JSON Schema enums to prevent LLM hallucinations for milea
 If you prefer to deploy via the command line instead of the one-click button:
 
 1. **Clone the repository and install dependencies:**
-   ```bash
+```bash
    git clone [https://github.com/olsonbd/seats-aero-cloudflare-mcp.git](https://github.com/olsonbd/seats-aero-cloudflare-mcp.git)
    cd seats-aero-cloudflare-mcp
    npm install
-
+```
 2. **Securely store your sectrets using Wrangler:**
 ```bash
    npx wrangler secret put SEATS_API_KEY
