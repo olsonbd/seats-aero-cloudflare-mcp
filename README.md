@@ -55,22 +55,11 @@ If you prefer to deploy via the command line instead of the one-click button:
 ```bash
    npx wrangler deploy
 ```
-## 🔌 Connecting to MetaMCP
 
-This server is designed to work seamlessly with MetaMCP as a remote `STREAMABLE_HTTP` server. 
-
-Navigate to your MetaMCP Dashboard > **MCP Servers** and add a new server using this configuration:
-
-* **Name:** `seats.aero`
-* **Type:** `STREAMABLE_HTTP`
-* **URL:** `https://seats-aero-cloudflare-mcp.<your-account>.workers.dev/mcp` *(Replace with your actual Workers URL)*
-* **Bearer Token:** *(The exact string you saved as your `MCP_CLIENT_SECRET`)*
-
----
 
 ## 🤖 Connecting to Claude Desktop
 
-You can also connect to your remote MCP server from local MCP clients using the [mcp-remote](https://www.npmjs.com/package/mcp-remote) proxy.
+Connect to your remote MCP server from local MCP clients using the [mcp-remote](https://www.npmjs.com/package/mcp-remote) proxy.
 
 Open your Claude Desktop configuration file and add the following:
 
