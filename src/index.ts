@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export interface Env {
   SEATS_API_KEY: string;
+  MCP_CLIENT_SECRET: string; // Your new security token
 }
 
 const SUPPORTED_SOURCES = [
@@ -16,13 +17,20 @@ const SUPPORTED_CABINS = ["economy", "premium", "business", "first"] as const;
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    // 1. Initialize the official MCP Server
+    
+    // --- THE GATEKEEPER ---
+    // Check the incoming request for the correct Authorization header
+    const authHeader = request.headers.get("Authorization");
+    if (authHeader !== `Bearer ${env.MCP_CLIENT_SECRET}`) {
+      return new Response("Unauthorized: Invalid or missing token", { status: 401 });
+    }
+    // ----------------------
+
     const server = new McpServer({
       name: "seats-aero",
       version: "1.0.0"
     });
 
-    // 2. GET ROUTES TOOL
     server.tool(
       "get_routes",
       "Retrieve a list of route objects from one specific mileage program.",
@@ -42,7 +50,6 @@ export default {
       }
     );
 
-    // 3. GET FLIGHTS TOOL
     server.tool(
       "get_flights",
       "Get a list of specific flights using cached search parameters.",
@@ -73,7 +80,6 @@ export default {
       }
     );
 
-    // 4. GET BULK AVAILABILITY TOOL
     server.tool(
       "get_bulk_avail",
       "Retrieve a large amount of availability objects from one specific mileage program.",
@@ -100,7 +106,6 @@ export default {
       }
     );
 
-    // 5. Wrap it in Cloudflare's edge handler
     const handler = createMcpHandler(server);
     return handler(request, env, ctx);
   },
