@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export interface Env {
   SEATS_API_KEY: string;
-  MCP_CLIENT_SECRET: string; // Your new security token
+  MCP_CLIENT_SECRET: string;
 }
 
 const SUPPORTED_SOURCES = [
