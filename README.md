@@ -46,12 +46,12 @@ If you prefer to deploy via the command line instead of the one-click button:
    cd seats-aero-cloudflare-mcp
    npm install
 
-2. **Securely store your sectrets using Wrangler:
+2. **Securely store your sectrets using Wrangler:**
 ```bash
    npx wrangler secret put SEATS_API_KEY
    npx wrangler secret put MCP_CLIENT_SECRET
 ```
-3. **Deploy to Cloudflare:
+3. **Deploy to Cloudflare:**
 ```bash
    npx wrangler deploy
 ```
