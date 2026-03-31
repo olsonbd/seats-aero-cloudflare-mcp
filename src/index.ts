@@ -116,39 +116,48 @@ export default new OAuthProvider({
     }
   },
 
-defaultHandler: {
+// Universal Zero Trust Auth Bridge + Discovery Map
+  defaultHandler: {
     fetch: async (request: Request, env: any, ctx: ExecutionContext) => {
       const url = new URL(request.url);
 
+      // 1. Serve the OAuth metadata map explicitly
+      if (url.pathname === "/.well-known/oauth-authorization-server") {
+        return new Response(JSON.stringify({
+          issuer: "https://seats.points.place",
+          authorization_endpoint: "https://seats.points.place/authorize",
+          token_endpoint: "https://seats.points.place/token",
+          registration_endpoint: "https://seats.points.place/register"
+        }), { 
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*" 
+          } 
+        });
+      }
+
+      // 2. authorization logic
       if (url.pathname === "/authorize") {
-        // 1. Check for the definitive proof that Cloudflare Access allowed this request
         const accessJwt = request.headers.get("Cf-Access-Jwt-Assertion");
         
         if (!accessJwt) {
-          return new Response("Unauthorized: Cloudflare Access evaluation failed or missing.", { status: 401 });
+          return new Response("Unauthorized: Cloudflare Access evaluation failed.", { status: 401 });
         }
 
-        // 2. Extract an identity (Email for humans, Client ID for Service Tokens)
         const userEmail = request.headers.get("Cf-Access-Authenticated-User-Email");
         const serviceTokenId = request.headers.get("CF-Access-Client-Id");
-        
-        // Fallback logically based on what policy triggered the success
         const identity = userEmail || serviceTokenId || "automated-policy-user";
 
-        // 3. Parse the OAuth request
         const oauthReqInfo = await env.OAUTH_PROVIDER.parseAuthRequest(request);
 
-        // 4. Generate the token tied to whatever identity passed the policy
         const { redirectTo } = await env.OAUTH_PROVIDER.completeAuthorization({
           request: oauthReqInfo,
           userId: identity, 
         });
 
-        // 5. Bounce back to the client!
         return Response.redirect(redirectTo);
       }
 
       return new Response("Not Found", { status: 404 });
     }
   }
-});
