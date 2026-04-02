@@ -1,7 +1,3 @@
-/**
- * This is tailored for stateless deployment to workers. For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
- */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "seats-aero-cloudflare-mcp",
@@ -9,12 +5,6 @@
   "compatibility_date": "2026-03-30",
   "compatibility_flags": [
     "nodejs_compat"
-  ],
-  "kv_namespaces": [
-    {
-      "binding": "OAUTH_KV",
-      "id": "5602f204187b4f66be8d4fb58052e7da"
-    }
   ],
   "migrations": [
     {
