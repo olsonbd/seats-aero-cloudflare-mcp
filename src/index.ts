@@ -158,6 +158,7 @@ export default new OAuthProvider({
         return Response.redirect(redirectTo);
       }
 
-      return new Response("Not Found", { status: 404 });
+    return new Response("Not Found", { status: 404 });
     }
-  }
+  } 
+});
